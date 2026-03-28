@@ -7,12 +7,8 @@
 )]
 #![deny(clippy::large_stack_frames)]
 
-use core_ink_5::ble::BlePins;
-use core_ink_5::ble::tasks::spawn_ble_tasks;
 use core_ink_5::buttons::{ButtonPins, spawn_buttons_task};
 use core_ink_5::display::{DisplayPins, spawn_display_task};
-use core_ink_5::wifi::WifiPins;
-use core_ink_5::wifi::wifi::spawn_wifi_tasks;
 use embassy_executor::Spawner;
 use embassy_time::{Duration, Timer};
 use esp_hal::gpio::{Level, Output, OutputConfig};
@@ -67,24 +63,12 @@ async fn main(spawner: Spawner) -> ! {
         },
     );
 
-    spawn_wifi_tasks(
-        &spawner,
-        WifiPins {
-            wifi: peripherals.WIFI,
-        },
-    );
-
-    spawn_ble_tasks(&spawner, BlePins { bt: peripherals.BT });
-
     let mut led = Output::new(peripherals.GPIO10, Level::Low, OutputConfig::default());
-    // let mut buzzer = Output::new(peripherals.GPIO2, Level::Low, OutputConfig::default());
 
     loop {
         Timer::after(Duration::from_secs(2)).await;
         led.set_low();
-        // buzzer.set_low();
-        Timer::after(Duration::from_millis(100)).await;
+        Timer::after(Duration::from_millis(50)).await;
         led.set_high();
-        // buzzer.set_high();
     }
 }

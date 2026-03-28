@@ -7,7 +7,7 @@ use embedded_graphics::{
     text::Text,
 };
 use epd_waveshare::{color::Color, prelude::RefreshLut};
-use no_std_strings::{str_format, str16, str32};
+use no_std_strings::str16;
 
 use crate::{
     channels::{
@@ -32,10 +32,7 @@ pub async fn display_task(pins: DisplayPins) {
     clear(&mut display);
 
     let style = MonoTextStyle::new(&FONT_9X18_BOLD, Color::Black);
-    let mut button = str16::from("CoreInk M5");
-    let mut now = str16::from("-");
-    let mut ip = str32::from("IP: _");
-    let mut ble = str16::from("BLE: -");
+    let label = str16::from("Uterus");
 
     display.update_and_display();
     display.set_lut(RefreshLut::Quick);
@@ -43,22 +40,9 @@ pub async fn display_task(pins: DisplayPins) {
     loop {
         clear(&mut display);
         let x = 10;
-        let mut y = 25;
-        let ys = 20;
+        let y = 25;
 
-        Text::new(button.to_str(), Point::new(x, y), style)
-            .draw(&mut display)
-            .unwrap();
-        y = y + ys;
-        Text::new(now.to_str(), Point::new(x, y), style)
-            .draw(&mut display)
-            .unwrap();
-        y = y + ys;
-        Text::new(ip.to_str(), Point::new(x, y), style)
-            .draw(&mut display)
-            .unwrap();
-        y = y + ys;
-        Text::new(ble.to_str(), Point::new(x, y), style)
+        Text::new(label.to_str(), Point::new(x, y), style)
             .draw(&mut display)
             .unwrap();
 
@@ -66,22 +50,7 @@ pub async fn display_task(pins: DisplayPins) {
 
         let message = RANDOM.receive().await;
         match message {
-            Random::Button {
-                button: _button,
-                on,
-            } => {
-                button = str_format!(str16, "{:?} {}", _button, on);
-            }
-            Random::IP { value } => match value {
-                Some(value) => ip = str_format!(str32, "IP: {}", value),
-                None => ip = str32::from("IP: -"),
-            },
-            Random::BLE { total } => {
-                ble = str_format!(str16, "BLE: {}", total);
-            }
-            Random::Time { current } => {
-                now = current;
-            }
+            Random::Button { .. } => {}
         }
     }
 }
