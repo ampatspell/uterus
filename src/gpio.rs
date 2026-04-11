@@ -9,17 +9,18 @@ pub fn create_gpio() {
     let handle = thread::spawn(move || {
         use rpi_pal::gpio::{Error, OutputPin};
 
-        struct Pins {
-            one: OutputPin,
-        }
+        let create_pins = || -> Result<[OutputPin; 4], Error> {
+            let pins = [
+                Gpio::new()?.get(2)?.into_output(),
+                Gpio::new()?.get(3)?.into_output(),
+                Gpio::new()?.get(4)?.into_output(),
+                Gpio::new()?.get(17)?.into_output(),
+            ];
 
-        let create_pins = || -> Result<Pins, Error> {
-            let one = Gpio::new()?.get(4)?.into_output();
-
-            Ok(Pins { one })
+            Ok(pins)
         };
 
-        let Pins { one } = match create_pins() {
+        let pins = match create_pins() {
             Ok(pins) => pins,
             Err(err) => {
                 println!("Failed to create pins: {err:?}");
@@ -28,7 +29,8 @@ pub fn create_gpio() {
         };
 
         {
-            let mut one = one;
+            let mut pins = pins;
+            let one = &mut pins[0];
             one.set_high();
         }
     });
