@@ -1,3 +1,3 @@
 pub enum Message {
-    Key { value: char },
+    Direction { value: u8 },
 }

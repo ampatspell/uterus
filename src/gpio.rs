@@ -10,14 +10,12 @@ pub fn create_gpio(rx: Receiver<Message>) {
     println!("create_gpio");
 
     let _ = thread::spawn(move || {
-        use rpi_pal::gpio::{Error, OutputPin};
+        use rpi_pal::gpio::{Error, Level, OutputPin};
 
-        let create_pins = || -> Result<[OutputPin; 4], Error> {
+        let create_pins = || -> Result<[OutputPin; 2], Error> {
             let pins = [
-                Gpio::new()?.get(2)?.into_output(),
-                Gpio::new()?.get(3)?.into_output(),
-                Gpio::new()?.get(4)?.into_output(),
-                Gpio::new()?.get(17)?.into_output(),
+                Gpio::new()?.get(2)?.into_output_low(),
+                Gpio::new()?.get(3)?.into_output_low(),
             ];
 
             Ok(pins)
@@ -31,16 +29,23 @@ pub fn create_gpio(rx: Receiver<Message>) {
             }
         };
 
-        pins.iter_mut().for_each(|pin| {
-            pin.set_low();
-        });
+        let mut set = |l1: Level, l2: Level| {
+            pins[0].write(l1);
+            pins[1].write(l2);
+        };
 
         loop {
             match rx.recv() {
                 Ok(message) => match message {
-                    Message::Key { value } => {
-                        println!("Value: {value}");
-                    }
+                    Message::Direction { value } => match value {
+                        0 => {
+                            set(Level::High, Level::Low);
+                        }
+                        1 => {
+                            set(Level::Low, Level::High);
+                        }
+                        _ => {}
+                    },
                 },
                 Err(_) => {}
             }
