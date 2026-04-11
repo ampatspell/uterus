@@ -1,13 +1,20 @@
-use std::thread::park;
+use std::{
+    sync::{Arc, mpsc::channel},
+    thread::park,
+};
 
-use crate::gpio::create_gpio;
+use crate::{channels::Message, gpio::create_gpio, tui::tui};
 
+mod channels;
 mod gpio;
+mod tui;
 
 fn main() {
+    let (tx, rx) = channel::<Message>();
+    let tx = Arc::new(tx);
+
     println!("Uterus");
-
-    create_gpio();
-
+    tui(&tx);
+    create_gpio(rx);
     park();
 }

@@ -1,12 +1,15 @@
+use crate::channels::Message;
+use std::sync::mpsc::Receiver;
+
 #[cfg(target_os = "linux")]
-pub fn create_gpio() {
+pub fn create_gpio(rx: Receiver<Message>) {
     use std::thread;
 
     use rpi_pal::gpio::Gpio;
 
     println!("create_gpio");
 
-    let handle = thread::spawn(move || {
+    let _ = thread::spawn(move || {
         use rpi_pal::gpio::{Error, OutputPin};
 
         let create_pins = || -> Result<[OutputPin; 4], Error> {
@@ -20,7 +23,7 @@ pub fn create_gpio() {
             Ok(pins)
         };
 
-        let pins = match create_pins() {
+        let mut pins = match create_pins() {
             Ok(pins) => pins,
             Err(err) => {
                 println!("Failed to create pins: {err:?}");
@@ -28,15 +31,22 @@ pub fn create_gpio() {
             }
         };
 
-        {
-            let mut pins = pins;
-            let one = &mut pins[0];
-            one.set_high();
+        pins.iter_mut().for_each(|pin| {
+            pin.set_low();
+        });
+
+        loop {
+            match rx.recv() {
+                Ok(message) => match message {
+                    Message::Key { value } => {
+                        println!("Value: {value}");
+                    }
+                },
+                Err(_) => {}
+            }
         }
     });
-
-    handle.join().unwrap();
 }
 
 #[cfg(not(target_os = "linux"))]
-pub fn create_gpio() {}
+pub fn create_gpio(_: Arc<Receiver<Message>>) {}
