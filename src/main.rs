@@ -9,6 +9,7 @@
 
 use core_ink_5::buttons::{ButtonPins, spawn_buttons_task};
 use core_ink_5::display::{DisplayPins, spawn_display_task};
+use core_ink_5::steppers::{SteppersOptions, spawn_steppers_task};
 use embassy_executor::Spawner;
 use embassy_time::{Duration, Timer};
 use esp_hal::gpio::{Level, Output, OutputConfig};
@@ -62,6 +63,29 @@ async fn main(spawner: Spawner) -> ! {
             user: peripherals.GPIO5.degrade(),
         },
     );
+
+    peripherals.GPIO25;
+    peripherals.GPIO26;
+    peripherals.GPIO36;
+    // peripherals.GPIO23;
+    // peripherals.GPIO34;
+    // peripherals.GPIO18;
+    peripherals.GPIO21;
+    peripherals.GPIO22;
+    peripherals.GPIO14;
+    peripherals.GPIO13;
+
+    // spawn_steppers_task(
+    //     &spawner,
+    //     SteppersOptions {
+    //         top: [
+    //             Output::new(peripherals.GPIO25, Level::Low, OutputConfig::default()),
+    //             Output::new(peripherals.GPIO26, Level::Low, OutputConfig::default()),
+    //             Output::new(peripherals.GPIO36, Level::Low, OutputConfig::default()),
+    //             Output::new(peripherals.GPIO22, Level::Low, OutputConfig::default()),
+    //         ],
+    //     },
+    // );
 
     let mut led = Output::new(peripherals.GPIO10, Level::Low, OutputConfig::default());
 
