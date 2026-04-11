@@ -4,6 +4,4 @@ pub fn create_gpio() {
 }
 
 #[cfg(not(target_os = "linux"))]
-pub fn create_gpio() {
-    println!("Create GPIO");
-}
+pub fn create_gpio() {}
