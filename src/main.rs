@@ -1,3 +1,7 @@
+use crate::gpio::create_gpio;
+
+mod gpio;
+
 fn main() {
-    println!("Hello, world!");
+    create_gpio();
 }
