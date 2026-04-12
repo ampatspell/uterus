@@ -7,10 +7,23 @@ pub fn create_gpio(rx: Receiver<Message>) {
 
     use rpi_pal::gpio::Gpio;
 
-    println!("create_gpio");
-
     let _ = thread::spawn(move || {
-        use rpi_pal::gpio::{Error, Level, OutputPin};
+        use std::cell::OnceCell;
+
+        use rpi_pal::{
+            gpio::{Error, Level, OutputPin},
+            pwm::Pwm,
+        };
+
+        thread_local! {
+            static PWM: OnceCell<Pwm> = OnceCell::new();
+        }
+
+        let pwm = Pwm::new(rpi_pal::pwm::Channel::Pwm0).unwrap();
+        pwm.set_frequency(100.0, 0.2).unwrap();
+        pwm.enable().unwrap();
+
+        PWM.with(|cell| cell.set(pwm).unwrap());
 
         let create_pins = || -> Result<[OutputPin; 2], Error> {
             let pins = [
