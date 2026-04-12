@@ -5,6 +5,8 @@ edition = "2024"
 
 [dependencies]
 console = "0.16.3"
+feather = { version = "0.8.1", features = ["json","log"] }
+crossbeam-channel = "0.5.15"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 rpi-pal = "0.22.3"

@@ -5,9 +5,9 @@ pub fn loop_task(tx: &Sender<Message>) {
     let tx = tx.clone();
     let _ = thread::spawn(move || {
         loop {
-            tx.send(Message::Direction { value: 0 }).unwrap();
+            tx.send(Message::Direction { value: 0 }).ok();
             thread::sleep(Duration::from_secs(5));
-            tx.send(Message::Direction { value: 1 }).unwrap();
+            tx.send(Message::Direction { value: 1 }).ok();
             thread::sleep(Duration::from_secs(5));
         }
     });
