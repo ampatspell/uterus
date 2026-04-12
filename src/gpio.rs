@@ -67,4 +67,4 @@ pub fn create_gpio(rx: Receiver<Message>) {
 }
 
 #[cfg(not(target_os = "linux"))]
-pub fn create_gpio(_: Arc<Receiver<Message>>) {}
+pub fn create_gpio(_: Receiver<Message>) {}
