@@ -1,20 +1,23 @@
-use std::{
-    sync::{Arc, mpsc::channel},
-    thread::park,
-};
+use std::{sync::mpsc::channel, thread::park};
 
-use crate::{channels::Message, gpio::create_gpio, loop_task::loop_task};
+use crate::{
+    channels::{Direction, Limit},
+    gpio::create_gpio,
+    loop_task::loop_task,
+};
 
 mod channels;
 mod gpio;
 mod loop_task;
 
 fn main() {
-    let (tx, rx) = channel::<Message>();
-    let tx = Arc::new(tx);
-
     println!("Uterus");
-    loop_task(&tx);
-    create_gpio(rx);
+
+    let (direction_tx, direction_rx) = channel::<Direction>();
+    let (limit_tx, limit_rx) = channel::<Limit>();
+
+    loop_task(direction_tx, limit_rx);
+    create_gpio(direction_rx, limit_tx);
+
     park();
 }

@@ -1,14 +1,30 @@
-use crate::channels::Message;
-use std::{sync::mpsc::Sender, thread, time::Duration};
+use crate::channels::{Direction, Limit, get_inverse};
+use std::{
+    sync::mpsc::{Receiver, Sender},
+    thread,
+};
 
-pub fn loop_task(tx: &Sender<Message>) {
+pub fn loop_task(tx: Sender<Direction>, rx: Receiver<Limit>) {
     let tx = tx.clone();
     let _ = thread::spawn(move || {
+        let mut direction = Direction::Forward;
         loop {
-            tx.send(Message::Direction { value: 0 }).unwrap();
-            thread::sleep(Duration::from_secs(5));
-            tx.send(Message::Direction { value: 1 }).unwrap();
-            thread::sleep(Duration::from_secs(5));
+            println!("Send {direction:?}");
+            tx.send(direction).unwrap();
+            match rx.recv() {
+                Ok(limit) => {
+                    println!("Got limit {limit:?}");
+                    let inverse = get_inverse(limit);
+                    if inverse == direction {
+                        println!("{limit:?} {direction:?}")
+                    } else {
+                        direction = inverse
+                    }
+                }
+                Err(err) => {
+                    dbg!(err);
+                }
+            }
         }
     });
 }

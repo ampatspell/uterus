@@ -1,19 +1,30 @@
-use crate::channels::Message;
+use crate::channels::Direction;
+use crate::channels::Limit;
 use std::sync::mpsc::Receiver;
 
 #[cfg(target_os = "linux")]
-pub fn create_gpio(rx: Receiver<Message>) {
+use std::sync::mpsc::Sender;
+
+#[cfg(target_os = "linux")]
+use std::{
+    thread::{self},
+    time::Duration,
+};
+
+#[cfg(target_os = "linux")]
+use rpi_pal::gpio::{Gpio, InputPin, Trigger};
+
+#[cfg(target_os = "linux")]
+fn create_gpio_outputs(rx: Receiver<Direction>) {
+    use rpi_pal::gpio::Gpio;
     use std::thread;
 
-    use rpi_pal::gpio::Gpio;
-
     let _ = thread::spawn(move || {
-        use std::cell::OnceCell;
-
         use rpi_pal::{
             gpio::{Error, Level, OutputPin},
             pwm::Pwm,
         };
+        use std::cell::OnceCell;
 
         thread_local! {
             static PWM: OnceCell<Pwm> = OnceCell::new();
@@ -49,16 +60,13 @@ pub fn create_gpio(rx: Receiver<Message>) {
 
         loop {
             match rx.recv() {
-                Ok(message) => match message {
-                    Message::Direction { value } => match value {
-                        0 => {
-                            set(Level::High, Level::Low);
-                        }
-                        1 => {
-                            set(Level::Low, Level::High);
-                        }
-                        _ => {}
-                    },
+                Ok(direction) => match direction {
+                    Direction::Forward => {
+                        set(Level::High, Level::Low);
+                    }
+                    Direction::Backward => {
+                        set(Level::Low, Level::High);
+                    }
                 },
                 Err(_) => {}
             }
@@ -66,5 +74,57 @@ pub fn create_gpio(rx: Receiver<Message>) {
     });
 }
 
+#[cfg(target_os = "linux")]
+fn create_gpio_inputs(limit_tx: Sender<Limit>) {
+    let _ = thread::spawn(move || {
+        use std::cell::OnceCell;
+
+        let mut left = Gpio::new().unwrap().get(17).unwrap().into_input();
+        let mut right = Gpio::new().unwrap().get(27).unwrap().into_input();
+
+        thread_local! {
+            static PINS: OnceCell<[InputPin;2]> = OnceCell::new();
+        }
+
+        let tx = limit_tx.clone();
+
+        left.set_async_interrupt(
+            Trigger::Both,
+            Some(Duration::from_millis(100)),
+            move |event| {
+                println!("left: {event:?}");
+                tx.send(Limit::Backward).unwrap();
+            },
+        )
+        .unwrap();
+
+        let tx = limit_tx.clone();
+
+        right
+            .set_async_interrupt(
+                Trigger::Both,
+                Some(Duration::from_millis(100)),
+                move |event| {
+                    println!("right: {event:?}");
+                    tx.send(Limit::Forward).unwrap();
+                },
+            )
+            .unwrap();
+
+        PINS.try_with(|pins| {
+            pins.set([left, right]).unwrap();
+        })
+        .unwrap();
+
+        thread::park();
+    });
+}
+
+#[cfg(target_os = "linux")]
+pub fn create_gpio(direction_rx: Receiver<Direction>, limit_tx: Sender<Limit>) {
+    create_gpio_outputs(direction_rx);
+    create_gpio_inputs(limit_tx);
+}
+
 #[cfg(not(target_os = "linux"))]
-pub fn create_gpio(_: Arc<Receiver<Message>>) {}
+pub fn create_gpio(_: Receiver<Direction>, _: Sender<Limit>) {}

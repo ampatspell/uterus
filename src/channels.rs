@@ -1,3 +1,18 @@
-pub enum Message {
-    Direction { value: u8 },
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Direction {
+    Forward,
+    Backward,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Limit {
+    Forward,
+    Backward,
+}
+
+pub fn get_inverse(limit: Limit) -> Direction {
+    if limit == Limit::Forward {
+        return Direction::Backward;
+    }
+    Direction::Forward
 }
