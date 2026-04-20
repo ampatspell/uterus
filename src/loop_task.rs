@@ -13,11 +13,8 @@ pub fn loop_task(tx: Sender<Direction>, rx: Receiver<Limit>) {
             tx.send(direction).unwrap();
             match rx.recv() {
                 Ok(limit) => {
-                    println!("Got limit {limit:?}");
                     let inverse = get_inverse(limit);
-                    if inverse == direction {
-                        println!("{limit:?} {direction:?}")
-                    } else {
+                    if inverse != direction {
                         direction = inverse
                     }
                 }

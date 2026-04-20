@@ -79,8 +79,8 @@ fn create_gpio_inputs(limit_tx: Sender<Limit>) {
     let _ = thread::spawn(move || {
         use std::cell::OnceCell;
 
-        let mut left = Gpio::new().unwrap().get(17).unwrap().into_input();
-        let mut right = Gpio::new().unwrap().get(27).unwrap().into_input();
+        let mut left = Gpio::new().unwrap().get(17).unwrap().into_input_pullup();
+        let mut right = Gpio::new().unwrap().get(27).unwrap().into_input_pullup();
 
         thread_local! {
             static PINS: OnceCell<[InputPin;2]> = OnceCell::new();
@@ -89,10 +89,9 @@ fn create_gpio_inputs(limit_tx: Sender<Limit>) {
         let tx = limit_tx.clone();
 
         left.set_async_interrupt(
-            Trigger::Both,
+            Trigger::FallingEdge,
             Some(Duration::from_millis(100)),
-            move |event| {
-                println!("left: {event:?}");
+            move |_| {
                 tx.send(Limit::Backward).unwrap();
             },
         )
@@ -102,10 +101,9 @@ fn create_gpio_inputs(limit_tx: Sender<Limit>) {
 
         right
             .set_async_interrupt(
-                Trigger::Both,
+                Trigger::FallingEdge,
                 Some(Duration::from_millis(100)),
-                move |event| {
-                    println!("right: {event:?}");
+                move |_| {
                     tx.send(Limit::Forward).unwrap();
                 },
             )
