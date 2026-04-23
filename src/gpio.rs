@@ -1,8 +1,6 @@
 use crate::channels::Direction;
 use crate::channels::Limit;
 use std::sync::mpsc::Receiver;
-
-#[cfg(target_os = "linux")]
 use std::sync::mpsc::Sender;
 
 #[cfg(target_os = "linux")]
