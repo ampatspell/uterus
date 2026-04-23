@@ -91,7 +91,7 @@ fn create_gpio_inputs(limit_tx: Sender<Limit>) {
 
         left.set_async_interrupt(
             Trigger::FallingEdge,
-            Some(Duration::from_millis(100)),
+            Some(Duration::from_millis(5)),
             move |_| {
                 tx.send(Limit::Backward).unwrap();
             },
@@ -103,7 +103,7 @@ fn create_gpio_inputs(limit_tx: Sender<Limit>) {
         right
             .set_async_interrupt(
                 Trigger::FallingEdge,
-                Some(Duration::from_millis(100)),
+                Some(Duration::from_millis(5)),
                 move |_| {
                     tx.send(Limit::Forward).unwrap();
                 },
