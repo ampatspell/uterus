@@ -2,6 +2,7 @@
 pub enum Direction {
     Forward,
     Backward,
+    Stop,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]

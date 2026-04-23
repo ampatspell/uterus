@@ -29,7 +29,7 @@ fn create_gpio_outputs(rx: Receiver<Direction>) {
         }
 
         let pwm = Pwm::new(rpi_pal::pwm::Channel::Pwm0).unwrap();
-        pwm.set_frequency(100.0, 0.2).unwrap();
+        pwm.set_frequency(100.0, 0.5).unwrap();
         pwm.enable().unwrap();
 
         PWM.with(|cell| cell.set(pwm).unwrap());
@@ -64,6 +64,9 @@ fn create_gpio_outputs(rx: Receiver<Direction>) {
                     }
                     Direction::Backward => {
                         set(Level::Low, Level::High);
+                    }
+                    Direction::Stop => {
+                        set(Level::Low, Level::Low);
                     }
                 },
                 Err(_) => {}
