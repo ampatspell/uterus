@@ -1,0 +1,13 @@
+# Contents of /etc/systemd/system/uterus.service
+
+[Unit]
+Description=Uterus
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/home/maija/src/uterus/target/debug/uterus
+
+[Install]
+WantedBy=multi-user.target
