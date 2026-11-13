@@ -20,19 +20,19 @@ fn create_gpio_outputs(rx: Receiver<Direction>) {
     let _ = thread::spawn(move || {
         use rpi_pal::{
             gpio::{Error, Level, OutputPin},
-            // pwm::Pwm,
+            pwm::Pwm,
         };
         use std::cell::OnceCell;
 
-        // thread_local! {
-        //     static PWM: OnceCell<Pwm> = OnceCell::new();
-        // }
+        thread_local! {
+            static PWM: OnceCell<Pwm> = OnceCell::new();
+        }
 
-        // let pwm = Pwm::new(rpi_pal::pwm::Channel::Pwm0).unwrap();
-        // pwm.set_frequency(100.0, 1.0).unwrap();
-        // pwm.enable().unwrap();
+        let pwm = Pwm::new(rpi_pal::pwm::Channel::Pwm0).unwrap();
+        pwm.set_frequency(100.0, 1.0).unwrap();
+        pwm.enable().unwrap();
 
-        // PWM.with(|cell| cell.set(pwm).unwrap());
+        PWM.with(|cell| cell.set(pwm).unwrap());
 
         let create_pins = || -> Result<[OutputPin; 2], Error> {
             let pins = [
